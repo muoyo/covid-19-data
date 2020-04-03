@@ -2,6 +2,7 @@ import streamlit as st
 
 # Import necessary libraries
 import pickle
+import datetime
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -145,7 +146,8 @@ st.sidebar.subheader('States displayed')
 for j, state in enumerate(zip(states_to_plot_latest['state'], states_to_plot_latest['cases'])):
     st.sidebar.text(f'{i*group_size + j + 1} - {state[0]} - {state[1]} cases')
 
-st.title(page_title)
+st.markdown(f'## **{page_title} as of {pd.to_datetime(most_recent_date).strftime("%b %-d, %Y")}**')
+# st.write(f'')
     
 sns.lineplot(x=states_to_plot['date'], y=y_val, hue=states_to_plot['state'], marker='o', ci=False)
 plt.xticks(rotation=90);
@@ -154,5 +156,5 @@ sns.despine()
 st.pyplot()
 
 
-st.markdown('## **Data source: [New York Times](https://www.nytimes.com/article/coronavirus-county-data-us.html)**')
+st.markdown('### **Data source & methodology: [New York Times](https://www.nytimes.com/article/coronavirus-county-data-us.html)**')
 st.write(df_states_latest)
