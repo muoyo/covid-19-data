@@ -154,5 +154,5 @@ sns.despine()
 st.pyplot()
 
 
-st.title('Raw data')
+st.markdown('## **Data source: [New York Times](https://www.nytimes.com/article/coronavirus-county-data-us.html)**')
 st.write(df_states_latest)
