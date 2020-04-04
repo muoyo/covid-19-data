@@ -100,17 +100,18 @@ beds_per_state['state'] = beds_per_state['state'].apply(lambda abbrev: state_dic
 # STATES
 df_states = pd.read_csv('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv')
 df_states['date'] = pd.to_datetime(df_states['date'])
+df_states = df_states.rename(columns={'cases': 'positive_tests'})
 df_states = df_states.loc[df_states['date'] > '2020-03-04']
 df_states = df_states.merge(df_population, how='left', on='state')
 df_states = df_states.merge(beds_per_state, how='left', on='state')
-df_states['cases_per_100k_people'] = df_states['cases'] / (df_states['population']/100_000)
+df_states['positive_tests_per_100k_people'] = df_states['positive_tests'] / (df_states['population']/100_000)
 df_states['beds_per_100k_people'] = df_states['beds'] / (df_states['population']/100_000)
 
 
 
 most_recent_date = df_states['date'].sort_values().unique()[-1]
 
-df_states_latest = df_states.loc[df_states['date'] == most_recent_date].sort_values(by='cases', ascending=False)
+df_states_latest = df_states.loc[df_states['date'] == most_recent_date].sort_values(by='positive_tests', ascending=False)
 
 group_size = st.sidebar.slider("States per chart", 1, len(df_states_latest), 10)
 state_groups = []
@@ -127,24 +128,24 @@ num_groups = len(state_groups)
 
 i = 0 if num_groups < 2 else st.sidebar.slider("Page number", 1, num_groups) - 1
 group = state_groups[i]
-states_to_plot = df_states.loc[df_states['state'].isin(group)].sort_values(by='cases', ascending=False)
+states_to_plot = df_states.loc[df_states['state'].isin(group)].sort_values(by='positive_tests', ascending=False)
 states_to_plot_latest = states_to_plot.loc[states_to_plot['date'] == most_recent_date]
-chart_title = f'States #{i*group_size+1}-{i*group_size+len(group)} by total number of cases'
+chart_title = f'States #{i*group_size+1}-{i*group_size+len(group)} by total number of positive test results'
 
 
-if st.sidebar.checkbox("Cases per 100,000 people", False): 
-    y_val = states_to_plot['cases_per_100k_people']
-    page_title = 'COVID-19 Cases per 100,000'
+if st.sidebar.checkbox("Positive tests per 100,000 people", False): 
+    y_val = states_to_plot['positive_tests_per_100k_people']
+    page_title = 'COVID-19 Positive Tests per 100,000'
 
 else: 
-    y_val = states_to_plot['cases']
-    page_title = 'COVID-19 Cases per State'
+    y_val = states_to_plot['positive_tests']
+    page_title = 'COVID-19 Positive Tests per State'
 
 
-st.sidebar.subheader(f'Cases per state, Page {i+1} of {num_groups}')
+st.sidebar.subheader(f'Positive tests per state, Page {i+1} of {num_groups}')
     
-for j, state in enumerate(zip(states_to_plot_latest['state'], states_to_plot_latest['cases'])):
-    st.sidebar.text(f'{i*group_size + j + 1} - {state[0]} - {state[1]} cases')
+for j, state in enumerate(zip(states_to_plot_latest['state'], states_to_plot_latest['positive_tests'])):
+    st.sidebar.text(f'{i*group_size + j + 1} - {state[0]} - {state[1]} positive_tests')
 
 st.markdown(f'## **{page_title} as of {pd.to_datetime(most_recent_date).strftime("%b %-d, %Y")}**')
 
