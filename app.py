@@ -158,4 +158,4 @@ st.pyplot()
 
 
 st.markdown('### **Data source & methodology: [New York Times](https://www.nytimes.com/article/coronavirus-county-data-us.html)**')
-st.write(df_states_latest)
+st.dataframe(df_states_latest)
