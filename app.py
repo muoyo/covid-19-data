@@ -26,6 +26,10 @@ df_population = pd.read_csv('PEP_2018_PEPANNRES_with_ann.csv', encoding='latin1'
 df_population = df_population.groupby('State', as_index=False)['Population'].sum()
 df_population = df_population.rename(columns={"State": "state", "Population": "population"})
 df_population['state'] = df_population['state'].apply(lambda state: state.strip())
+df_population = df_population.append(pd.DataFrame([['Puerto Rico', 3_193_400],
+                                                   ['Guam', 165_768],
+                                                   ['Virgin Islands', 104_680],
+                                                   ['Northern Mariana Islands', 56_882]], columns=['state', 'population']))
 
 
 # HOSPITALS
@@ -145,7 +149,7 @@ else:
 st.sidebar.subheader(f'Positive tests per state, Page {i+1} of {num_groups}')
     
 for j, state in enumerate(zip(states_to_plot_latest['state'], states_to_plot_latest['positive_tests'])):
-    st.sidebar.text(f'{i*group_size + j + 1} - {state[0]} - {state[1]} positive_tests')
+    st.sidebar.text(f'{i*group_size + j + 1} - {state[0]} - {state[1]} positive tests')
 
 st.markdown(f'## **{page_title} as of {pd.to_datetime(most_recent_date).strftime("%b %-d, %Y")}**')
 
