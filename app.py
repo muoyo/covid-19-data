@@ -175,9 +175,12 @@ else:
 
 
 st.sidebar.subheader(f'Positive tests per state, Page {i+1} of {num_groups}')
+
+state_is_hidden = []
     
 for j, state in enumerate(zip(states_to_plot_latest['state'], states_to_plot_latest['positive_tests'])):
-    st.sidebar.text(f'{i*group_size + j + 1} - {state[0]} - {state[1]} positive tests')
+    if not st.sidebar.checkbox(f'{i*group_size + j + 1} - {state[0]} - {state[1]}', value=True):
+        state_is_hidden.append(state[0])
 
 st.markdown(f'## **{page_title} as of {pd.to_datetime(most_recent_date).strftime("%b %-d, %Y")}**')
 
@@ -185,10 +188,14 @@ if chart_type == 'Daily Increase':
     for s in group:
         states_to_plot = state_pivot_copy.loc[s]
 
-        sns.lineplot(x=state_pivot_copy.columns, y=states_to_plot, label=s, marker='o', ci=False)
-        plt.ylabel('Positive Tests per Day')
+        if not s in state_is_hidden: 
+            sns.lineplot(x=state_pivot_copy.columns, y=states_to_plot, label=s, linewidth=2, marker='o', ci=False)
+        
+    plt.ylabel('Positive Tests per Day')
 
 else:
+    states_to_plot = states_to_plot.loc[states_to_plot['state'].isin(state_is_hidden) == False]
+    
     sns.lineplot(x=states_to_plot['date'], y=y_val, hue=states_to_plot['state'], linewidth=3, marker='o', ci=False)
 
 plt.xticks(rotation=90);
