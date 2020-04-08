@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from pandas.tseries.offsets import DateOffset
 
 # Import python files we've created to help
 
@@ -129,6 +130,7 @@ state_groups = []
 state_names = df_states_latest['state']
 
 
+
 # Initialize empty arrays for groups of states
 for i in np.arange(0, len(state_names), group_size): 
     state_groups.append([])
@@ -147,14 +149,29 @@ states_to_plot_latest = states_to_plot.loc[states_to_plot['date'] == most_recent
 state_string = f'State {i+1}' if group_size < 2 else f'States {i*group_size+1}-{i*group_size+len(group)}'
 chart_title = f'{state_string} by total number of positive test results'
 
+chart_type = st.radio('Choose your chart:', ['Cumulative', 'Per 100,000', 'Daily Increase'])
 
-if st.sidebar.checkbox("Positive tests per 100,000 people", False): 
+# if st.sidebar.checkbox("Positive tests per 100,000 people", False): 
+if chart_type == 'Per 100,000':
     y_val = states_to_plot['positive_tests_per_100k_people']
     page_title = 'COVID-19 Positive Tests per 100,000'
 
-else: 
+elif chart_type == 'Cumulative': 
     y_val = states_to_plot['positive_tests']
     page_title = 'COVID-19 Positive Tests per State'
+
+else:
+    state_pivot = pd.pivot_table(df_states, values='positive_tests', index=['state'],
+                    columns=['date'], aggfunc=np.sum, fill_value=0)
+    state_pivot_copy = state_pivot.copy()
+
+    for j in range(len(state_pivot.index)):
+        for k in range(0, len(state_pivot.columns)-1):
+            state_pivot_copy.iloc[j, k+1] = state_pivot.iloc[j, k+1] - state_pivot.iloc[j, k]
+            
+    # y_val = states_to_plot['positive_tests']
+    page_title = 'Daily Change in COVID-19 Positive Tests per State'
+
 
 
 st.sidebar.subheader(f'Positive tests per state, Page {i+1} of {num_groups}')
@@ -164,10 +181,19 @@ for j, state in enumerate(zip(states_to_plot_latest['state'], states_to_plot_lat
 
 st.markdown(f'## **{page_title} as of {pd.to_datetime(most_recent_date).strftime("%b %-d, %Y")}**')
 
+if chart_type == 'Daily Increase':
+    for s in group:
+        states_to_plot = state_pivot_copy.loc[s]
 
-sns.lineplot(x=states_to_plot['date'], y=y_val, hue=states_to_plot['state'], linewidth=3, marker='o', ci=False)
+        sns.lineplot(x=state_pivot_copy.columns, y=states_to_plot, label=s, marker='o', ci=False)
+        plt.ylabel('Positive Tests per Day')
+
+else:
+    sns.lineplot(x=states_to_plot['date'], y=y_val, hue=states_to_plot['state'], linewidth=3, marker='o', ci=False)
+
 plt.xticks(rotation=90);
 plt.title(chart_title)
+plt.legend()
 sns.despine()
 plt.tight_layout()
 st.pyplot()
