@@ -170,7 +170,7 @@ else:
             state_pivot_copy.iloc[j, k+1] = state_pivot.iloc[j, k+1] - state_pivot.iloc[j, k]
             
     # y_val = states_to_plot['positive_tests']
-    page_title = 'Daily Change in COVID-19 Positive Tests per State'
+    page_title = 'Daily Increase in COVID-19 Positive Tests per State'
 
 
 
