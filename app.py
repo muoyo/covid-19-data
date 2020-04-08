@@ -112,19 +112,28 @@ df_states['positive_tests_per_100k_people'] = df_states['positive_tests'] / (df_
 df_states['beds_per_100k_people'] = df_states['beds'] / (df_states['population']/100_000)
 
 
+dates_sorted = df_states['date'].sort_values().unique()
 
-most_recent_date = df_states['date'].sort_values().unique()[-1]
+earliest_date = dates_sorted[0]
+most_recent_date = dates_sorted[-1]
+
+
+# df_states['positive_tests_daily'] = 0
+# df_states.loc[df_states['date'] < most_recent_date]
+
 
 df_states_latest = df_states.loc[df_states['date'] == most_recent_date].sort_values(by='positive_tests', ascending=False)
 
 group_size = st.sidebar.slider("States per chart", 1, len(df_states_latest), 10)
 state_groups = []
+state_names = df_states_latest['state']
+
 
 # Initialize empty arrays for groups of states
-for i in np.arange(0, len(df_states_latest['state']), group_size): 
+for i in np.arange(0, len(state_names), group_size): 
     state_groups.append([])
     
-for i, state in enumerate(df_states_latest['state']):
+for i, state in enumerate(state_names):
     state_groups[i // group_size].append(state)
 
 
@@ -134,7 +143,9 @@ i = 0 if num_groups < 2 else st.sidebar.slider("Page number", 1, num_groups) - 1
 group = state_groups[i]
 states_to_plot = df_states.loc[df_states['state'].isin(group)].sort_values(by='positive_tests', ascending=False)
 states_to_plot_latest = states_to_plot.loc[states_to_plot['date'] == most_recent_date]
-chart_title = f'States #{i*group_size+1}-{i*group_size+len(group)} by total number of positive test results'
+
+state_string = f'State {i+1}' if group_size < 2 else f'States {i*group_size+1}-{i*group_size+len(group)}'
+chart_title = f'{state_string} by total number of positive test results'
 
 
 if st.sidebar.checkbox("Positive tests per 100,000 people", False): 
