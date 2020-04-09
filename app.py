@@ -163,13 +163,11 @@ elif chart_type == 'Cumulative':
 else:
     state_pivot = pd.pivot_table(df_states, values='positive_tests', index=['state'],
                     columns=['date'], aggfunc=np.sum, fill_value=0)
-    state_pivot_copy = state_pivot.copy()
 
     for j in range(len(state_pivot.index)):
-        for k in range(0, len(state_pivot.columns)-1):
-            state_pivot_copy.iloc[j, k+1] = state_pivot.iloc[j, k+1] - state_pivot.iloc[j, k]
-            
-    # y_val = states_to_plot['positive_tests']
+        for k in range(len(state_pivot.columns)-1, -0, -1):
+            state_pivot.iat[j, k] = state_pivot.iat[j, k] - state_pivot.iat[j, k-1]
+           
     page_title = 'Daily Increase in COVID-19 Positive Tests per State'
 
 
@@ -186,17 +184,25 @@ st.markdown(f'## **{page_title} as of {pd.to_datetime(most_recent_date).strftime
 
 if chart_type == 'Daily Increase':
     for s in group:
-        states_to_plot = state_pivot_copy.loc[s]
+        states_to_plot = state_pivot.loc[s]
 
-        if not s in state_is_hidden: 
-            sns.lineplot(x=state_pivot_copy.columns, y=states_to_plot, label=s, linewidth=2, marker='o', ci=False)
+        if not s in state_is_hidden:
+            if group_size - len(state_is_hidden) > 1:
+                sns.lineplot(x=state_pivot.columns, y=states_to_plot, label=s, linewidth=3, marker='o', ci=False)
+            
+            else:
+                sns.barplot(x=state_pivot.columns, y=states_to_plot, label=s, color=SEABORN_PALETTE[0], ci=False)
         
     plt.ylabel('Positive Tests per Day')
 
 else:
     states_to_plot = states_to_plot.loc[states_to_plot['state'].isin(state_is_hidden) == False]
     
-    sns.lineplot(x=states_to_plot['date'], y=y_val, hue=states_to_plot['state'], linewidth=3, marker='o', ci=False)
+    if group_size - len(state_is_hidden) > 1:
+        sns.lineplot(x=states_to_plot['date'], y=y_val, hue=states_to_plot['state'], linewidth=3, marker='o', ci=False)
+    
+    else:
+        sns.barplot(x=states_to_plot['date'], y=y_val, hue=states_to_plot['state'], ci=False)
 
 plt.xticks(rotation=90);
 plt.title(chart_title)
